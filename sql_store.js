@@ -343,18 +343,247 @@ let sql = `SELECT *
 
 
 /* 
- * Self Outer Joins
+ * Self Outer Joins (also manager itself)
  * 
  **/ 
-let sql = `SELECT *
+let sql = `SELECT e.employee_id, e.first_name, m.firts_name AS manager 
+            FROM employees e 
+            LEFT JOIN employees m
+              ON e.reports_to = m.empotyee_id`; 
+
+/* 
+ * The USING Clause (like ON o.customer_id = c.customer_id)
+ * 
+ **/ 
+let sql = `SELECT o.order_id, c.firts_name, sh.name AS sipper 
+            FROM orders o 
+            JOIN customers c
+              USING (customer_id)
+            LEFT JOIN shippers sh
+              USING (shipper_id)`; // should be exactly the same name of column in different tables 
+
+
+              // USING (shipper_id, order_id)`; // compound join condition
+
+
+
+/* 
+ * Cross Joins (combine columns with every record)
+ * 
+ **/ 
+let sql = `SELECT 
+              c.first_name AS customer
+              p.name AS product
             FROM customers c 
-            RIGHT JOIN orders o 
-              ON c.customer_id = 0.customer_id`; 
+            CROSS JOIN products p
+            ORDER BY c.first_name`;
+
+ // the same  
+            `SELECT 
+              c.first_name AS customer
+              o.name AS product
+            FROM customers c, orders o 
+            ORDER BY c.first_name`
+
+
+
+/* 
+ * Unions (combine rows for multiply tables)
+ * 
+ **/ 
+let sql = `SELECT 
+              order_id,
+              order_date,
+              'Active' AS status  
+            FROM orders
+            WHERE order_date >= '2019-01-01'
+
+          UNION  
+
+          SELECT 
+            order_id,
+            order_date,
+            'Archived' AS status  
+          FROM orders
+          WHERE order_date < '2019-01-01'`; // one table
+
+
+
+          `SELECT 
+              first_name,
+            FROM customers
+
+          UNION  
+
+          SELECT 
+            name,
+          FROM shippers`; // two tables (should be the same number of select columns)
+
+
+
+
+/* 
+ * Insert into one table one row
+ * 
+ **/ 
+let sql = `INSERT INTO customers
+            VALUES (
+              DEFAULT, 
+              'John', 
+              'Smith', 
+              '1990-01-01',
+              NULL // (DEFAULT),
+              'address',
+              'city',
+              'CA',
+              DEAFULT
+              )`;
+
+
+          `INSERT INTO customers (
+            firts_name,
+            last_name,
+            birth_date,
+            address,
+            city,
+            state
+          )
+            VALUES (
+              'John', 
+              'Smith', 
+              '1990-01-01',
+              'address',
+              'city',
+              'CA'
+              )`;
+
+
+/* 
+ * Insert many rows into one table
+ * 
+ **/ 
+let sql = `INSERT INTO shippers (name)
+              VALUES ('Shipper1'),
+                     ('Shipper2'),
+                     ('Shipper3')`;
+
+
+
+/* 
+ * Insert data into multiply tables (child ref)
+ * 
+ **/ 
+let sql = `INSERT INTO orders (customer_id, order_date, status)
+              VALUES (1, '2019-01-02', 1)
+              
+           INSERT INTO order_items
+            VALUES (LAST_INSERT_ID(), 1, 1, 2.95),    
+            VALUES (LAST_INSERT_ID(), 2, 1, 4.88)`;
+
+
+
+
+/* 
+ * Copy table to a new table
+ * 
+ **/ 
+let sql = `CREATE TABLE orders_archived AS
+            SELECT * FROM orders` // order_id is not marked as primary key and not auto increment
+
+            `INSERT INTO orders_archived
+            SELECT * FROM orders 
+            WHERE order_date < '2019-01-02'` // when table is created
+
+
+
+/* 
+ * Update data in single row
+ * 
+ **/ 
+let sql = `UPDATE invoices 
+            SET payment_total = 10, 
+            payment_date = '2019-01-02'
+            WHERE invoices_id = 1`;
+   
+
+            `UPDATE invoices 
+            SET 
+              payment_total = invoices_total * 0.5, 
+              payment_date = due_date
+            WHERE invoices_id = 3`;
+
+
+
+/* 
+ * Update data in multiply rows
+ * 
+ **/ 
+let sql = `UPDATE invoices 
+            SET payment_total = 10, 
+            payment_date = '2019-01-02'
+            WHERE invoices_id IN (3, 4)`;
+
+
+            `UPDATE invoices 
+            SET payment_total = 10, 
+            payment_date = '2019-01-02'`; // all
+
+
+            `UPDATE customers 
+            SET points = points + 50, 
+            WHERE birth_date = '2019-01-02'`; 
+   
+
+
+
+/* 
+ * Using Subqueries in Updates
+ * 
+ **/ 
+let sql = `UPDATE invoices 
+           SET
+            payment_total = invoice_total * 0.5
+            payment_date = due_date
+           WHERE client_id = (
+             SELECT client_id
+             FROM clients
+             WHERE name = 'Myworks'
+           )`;
+
+
+           `UPDATE invoices 
+           SET
+            payment_total = invoice_total * 0.5
+            payment_date = due_date
+           WHERE client_id IN (
+             SELECT client_id
+             FROM clients
+             WHERE state IN ('CA', 'NY')
+           )`;
+
+
+/* 
+ * DELETE rows
+ * 
+ **/ 
+let sql = `DELETE FROM invoices
+            WHERE invoice_id = 1`; 
+
+           
+          `DELETE FROM invoices
+            WHERE client_id = (
+              SELECT * FROM clients
+              WHERE name = 'Myworks'
+            )`; 
+
+
+
+      
 
 
 
   let query = db.query(sql, (err, result) => {
-    if (err) throw err;
+    if (err) throw err; 
     console.log(result);
     res.send(result);
   });
