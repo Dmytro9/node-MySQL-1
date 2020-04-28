@@ -1,6 +1,17 @@
-start xampp .run
+launch xampp
 
 http://localhost/dashboard/
 http://localhost/phpmyadmin/
 
 https://github.com/mysqljs/mysql
+
+### 
+
+
+links (relations):
+https://dataschool.com/learn-sql/joins/
+
+
+
+
+
