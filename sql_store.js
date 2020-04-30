@@ -222,7 +222,9 @@ app.get('/customers', (req, res) => {
    **/
   let sql = `SELECT COUNT(*) FROM tracks;`; // COUNT 3503
   let sql = `SELECT COUNT(album) FROM tracks;`; // COUNT of specific columns
-
+  let sql = `SELECT COUNT(DISTINCT album) FROM tracks;`; // COUNT of of unique values in the data
+  let sql = `SELECT COUNT(*) OVER (PARTITION BY 1) AS TotalRecords, EMPLOYEE_ID, NAME,  
+   EMAIL, MOBILE, COUNTRY FROM EMPLOYEETEAM`; // values and total count
   /*
    * (INNER) JOIN - INNER is optionaly
    * get data from two ref tables
@@ -561,3 +563,9 @@ app.listen('3000', () => {
 
 // viRdpJdDmjUWAw2
 // skyworker
+
+// A primary key is a column (or sometimes set of columns) in a table that is a unique identifier for each row
+// id
+
+// Foreign keys are columns in a table that specify a link to a primary key in another table.
+// user_id
